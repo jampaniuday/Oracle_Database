@@ -62,15 +62,13 @@
 
         rman target / <<EOF>> ${DIR_LOGS}/rman_script2_weekly_increLV0_${DATE}_${TIME}.log
         set echo on;
-        ALLOCATE CHANNEL c1 DEVICE TYPE DISK;
         CONFIGURE CONTROLFILE AUTOBACKUP ON;
 
-        sql 'alter system swith logfile';
-        sql 'alter system checkpoint';
-        sql 'alter database backup controlfile to trace as /backups/controlfile${DATE}_${TIME}.txt';
+        sql 'alter system switch logfile';
+        sql 'ALTER SYSTEM CHECKPOINT';
 
-        CONFIGURE CONTROLFILE AUTOBACKUP FORMAT FOR DEVICE TYPE DISK TO '${DIR_BKP_DAYS}/%F_${DATE}_${TIME}';
-        BACKUP INCREMENTAL LEVEL 0 DATABASE PLUS ARCHIVELOG  TAG 'weekly_increLV0_db_bkup' FORMAT '${DIR_BKP_DAYS}/%D_increLV0_${DATE}_${TIME}_%U_%T_%S_%P.bck';
+        CONFIGURE CONTROLFILE AUTOBACKUP FORMAT FOR DEVICE TYPE DISK TO '${DIR_BKP_DAYS}/%F_increLV0_${DATE}_${TIME}';
+        BACKUP INCREMENTAL LEVEL 0 DATABASE TAG 'weekly_increLV0_db_bkup' FORMAT '${DIR_BKP_DAYS}/%d_increLV0_${DATE}_${TIME}_%s_%p.bck';
 
 
 
@@ -100,9 +98,6 @@
 
 ---------------------------------------------------------------------------------------------------------------------------------------------------
 #backup INCREMENTAL differencial level 1
-
-
-
 
 
 
@@ -159,17 +154,18 @@
 
 
 
-        rman target / <<EOF>> ${DIR_LOGS}/rman_script2_daily_increLV1.sh${DATE}_${TIME}.log
+        rman target / <<EOF>> ${DIR_LOGS}/rman_script2_daily_increLV1${DATE}_${TIME}.log
         set echo on;
-        ALLOCATE CHANNEL c1 DEVICE TYPE DISK;
+   
         CONFIGURE CONTROLFILE AUTOBACKUP ON;
 
-        sql 'alter system swith logfile';
-        sql 'alter system checkpoint';
-        sql 'alter database backup controlfile to trace as /backups/controlfile${DATE}_${TIME}.txt';
+        sql 'alter system switch logfile';
+        sql 'ALTER SYSTEM CHECKPOINT';
+		
 
-        CONFIGURE CONTROLFILE AUTOBACKUP FORMAT FOR DEVICE TYPE DISK TO '${DIR_BKP_DAYS}/%F_${DATE}_${TIME}';
-        BACKUP INCREMENTAL LEVEL 1 DATABASE PLUS ARCHIVELOG  FORMAT '${DIR_BKP_DAYS}/XE_increLV1_${DATE}_${TIME}_%U.bck';
+        CONFIGURE CONTROLFILE AUTOBACKUP FORMAT FOR DEVICE TYPE DISK TO '${DIR_BKP_DAYS}/%F_increLV0_${DATE}_${TIME}';
+        ALLOCATE CHANNEL ch1 DEVICE TYPE DISK;
+        BACKUP INCREMENTAL LEVEL 1 DATABASE TAG 'daily_increLV1_db_bkup'  FORMAT '${DIR_BKP_DAYS}/%d_increLV0_${DATE}_${TIME}_%s_%p.bck';
 
 
 
@@ -235,7 +231,416 @@ parameters.
 
 
 
+BACKUP INCREMENTAL LEVEL 0 DATABASE PLUS ARCHIVELOG  TAG 'weekly_increLV0_db_bkup' FORMAT '/backups/%D_increLV0_${TIME}_%U_%T_%S_%P.bck';
  
 
+BACKUP INCREMENTAL LEVEL 0 DATABASE PLUS ARCHIVELOG  TAG 'weekly_increLV0_db_bkup' FORMAT '/backups/%D_increLV0_%U_%T_%S_%P.bck
+
+
+
+
+
+
+C:\Users\PedroAkira\Downloads\swingbench25971\swingbench
+
+
+
+RUN
+{ 
+  ALLOCATE CHANNEL ch1 DEVICE TYPE DISK;
+  ALLOCATE CHANNEL ch2 DEVICE TYPE DISK;
+  ALLOCATE CHANNEL ch3 DEVICE TYPE DISK;
+  BACKUP DATABASE PLUS ARCHIVELOG;
+}
+
+
+
+
+
+
+
+DBMS_SCHEDULER 
+
+
+
+
+
+
+
+
+
+
+---------------------------------------------------------------------------------------------------------------------------------------------------
+/BACKUPS
+
+fdisk -l
+
+fdisk /dev/sdb
+	m
+	n
+	p
+	1
+	1
+	enter
+	w 
+
+
+
+mkdir /backups
+chown oracle /backups/
+chgrp oracle /backups/
+
+
+df -h
+
+lsblk
+
+
+
+
+mkfs.ext4 /dev/sdb1
+
+
+mount  /dev/sdb1 /backups/
+
+
+
+
+
+
+
+
+
+---------------------------------------------------------------------------------------------------------------------------------------------------
+
+DBMS_SCHEDULER package 
+
+
+
+Creating Jobs
+You create one or more jobs using the DBMS_SCHEDULER.CREATE_JOB or DBMS_SCHEDULER.CREATE_JOBS procedures or Cloud Control.
+
+
+
+
+
+begin
+    dbms_scheduler.create_job(
+        job_name        => 'DATABASE_VALIDATION_VIA_RMAN',
+        job_type        => 'EXECUTABLE',
+        job_action        => 'c:\rman\rman_validate.bat',
+        start_date        => trunc(systimestamp)+4/24,
+        repeat_interval        => 'FREQ=DAILY;BYHOUR=4;BYMINUTE=0',
+        enabled            => false,
+        comments        => 'Database validation job via RMAN validate command');
+end;
+/
+
+
+
+
+
+
+
+BEGIN
+  DBMS_SCHEDULER.CREATE_JOB (
+   job_name           =>  'rman_daily_increLV1',
+   job_type           =>  'executable',
+   job_action         =>  '/home/oracle/scripts/rman_script2_daily_increLV1.sh',
+   repeat_interval    =>  'FREQ=DAILY;BYHOUR=6;BYMINUTE=0', 
+   enabled            =>    TRUE,
+   auto_drop          =>   FALSE,
+   comments           =>  'Job to run daily incremental backup');
+END;
+/
+
+
+
+
+
+
+exec dbms_scheduler.create_credential(credential_name => 'ORACLE_OS_CREDS',username => 'oracle', password => 'oracle');
+
+
+
+BEGIN
+  DBMS_SCHEDULER.CREATE_JOB (
+   job_name           =>  'rman_weekly_increLV0',
+   job_type           =>  'executable',
+   job_action         =>  '/home/oracle/scripts/rman_script2_weekly_increLV0.sh',
+   repeat_interval    =>  'FREQ=weekly;byday=sun;BYHOUR=6;BYMINUTE=0', 
+   credential_name => 'ORACLE_OS_CREDS',
+   enabled            =>    TRUE,
+   auto_drop          =>   FALSE,
+   comments           =>  'Job to run weekly incremental LVL0 backup');
+END;
+/
+
+
+
+
+
+begin
+    dbms_scheduler.run_job(job_name=>'RMAN_WEEKLY_INCRELV0'); -- true is default
+end;
+/
+
+
+exec dbms_scheduler.create_credential(credential_name => 'ORACLE_OS_CREDS',username => 'oracle', password => 'oracle');
+
+
+dbms_credential.create_credential(credential_name   => 'ORACLE_OS_CREDS',
+                                  username          =>  'oracle',
+                                  password          =>  'oracle',
+                                  comments          => 'run scripts using oracle OS account');
+
+
+
+
+
+ credential_name => 'ORACLE_OS_CREDS'
+
+
+BEGIN
+	exec dbms_scheduler.set_attribute(
+		name => 'RMAN_WEEKLY_INCRELV0',
+		start_date =>  systimestamp,
+		 credential_name => 'ORACLE_OS_CREDS');
+END;
+/
+
+
+
+
+
+
+
+
+BEGIN
+	dbms_scheduler.set_attribute(
+		name => 'RMAN_WEEKLY_INCRELV0',
+		start_date =>  systimestamp);
+END;
+/
+
+
+
+commit;
+
+
+
+
+
+
+
+
+RMAN_WEEKLY_INCRELV0
+
+
+
+
+dbms_scheduler.set_attribute(
+name => ‘RMAN_INCR0_BACKUP’,
+attribute => ‘repeat_interval’,
+value => ‘freq=weekly; byday=wed,sun; byhour=5; byminute=0; bysecond=0;’);
+dbms_scheduler.enable( ‘RMAN_INCR0_BACKUP’ );
+end;
+/
+commit;
+
+
+
+
+
+
+
+-- Check the status of the job.
+
+
+COLUMN job_name FORMAT A20
+SELECT job_name, status, error#
+FROM   user_scheduler_job_run_details
+ORDER BY job_name;
+
+
+
+
+   start_date        =>  systimestamp,
+
+
+
+
+
+freq=weekly; byday=sun; byhour=6; byminute=0; bysecond=0;'');
+
+
+
+freq=daily;byday=MON,TUE,WED,THU,FRI,SAT;byhour=8,13,18;byminute=0;bysecond=0;
+
+
+
+
+BYDAY=MON,TUE,WED,THU,FRI;
+
+
+
+
+
+
+
+
+
+SELECT JOB_NAME FROM DBA_SCHEDULER_JOBS WHERE JOB_NAME = 'RMAN_WEEKLY_INCRELV0';
+
+
+
+
+
+begin
+    dbms_scheduler.run_job(job_name=>'RMAN_WEEKLY_INCRELV0'); -- true is default
+end;
+/
+
+
+
+dbms_scheduler.run_job('RMAN_WEEKLY_INCRELV0', false);
+
+
+
+begin
+	dbms_scheduler.run_job('RMAN_WEEKLY_INCRELV0', false);
+end;
+/
+
+
+
+
+
+
+SELECT JOB_NAME, REPEAT_INTERVAL FROM DBA_SCHEDULER_JOBS
+WHERE JOB_NAME =  'RMAN_WEEKLY_INCRELV0';
+
+
+
+XMLDB_NFS_CLEANUP_JOB
+
+
+
+exec dbms_scheduler.create_credential(credential_name => 'oracle',username => 'oracle', password => 'oracle');
+
+
+exec dbms_scheduler.create_job_class(job_class_name=> 'RUN_RMAN_JOB', service=> 'rmansec');
+
+
+begin
+dbms_scheduler.set_attribute(
+name => RMAN_DAILY_INCRELV1,
+attribute => 'repeat_interval',
+value => 'freq=weekly; byday=sun; byhour=6; byminute=0; bysecond=0;'');
+end;
+/
+commit;
+
+
+ exec DBMS_SCHEDULER.CREATE_CREDENTIAL(credential_name=>'oracle', username=>'oracle', password=>'oracle', database_role=>'SYSDBA');
+
+
+
+SELECT credential_name,username,database_role FROM dba_scheduler_credentials
+
+
+
+
+SELECT SYSTIMESTAMP FROM DUAL;
+
+
+
+
+
+---------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+.rman
+
+
+   start_date        =>  systimestamp,
+
+
+
+
+
+---------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+SELECT SYSTIMESTAMP FROM DUAL;
+
+
+
+
+
+
+
+
+
+
+https://docs.oracle.com/cd/B19306_01/server.102/b14200/functions173.htm
+
+---------------------------------------------------------------------------------------------------------------------------------------------------
+
+SELECT owner, job_name, enabled FROM dba_scheduler_jobs;
+
+
+
+
+
+
+SELECT * FROM dba_scheduler_jobs WHERE JOB_NAME = 'RMAN_DAILY_INCRELV1';
+
+
+
+
+BEGIN
+  DBMS_SCHEDULER.CREATE_JOB (
+   job_name           =>  'rman_daily_increLV1',
+   job_type           =>  'executable',
+   job_action         =>  '/home/oracle/scripts/rman_script2_daily_increLV1.sh',
+   repeat_interval    =>  'FREQ=DAILY;INTERVAL=1', /* every other day */
+   enabled            =>    TRUE,
+   auto_drop          =>   FALSE,
+   comments           =>  'Job to run daily incremental backup');
+END;
+/
+
+
+
+
+
+	
+
+
+
+
+DBMS_SCHEDULER.drop_job(job_name => 'RMAN_DAILY_INCRELV1');
+
+SYS.DBMS_SCHEDULER.DROP_JOB (job_name => 'RMAN_DAILY_INCRELV1');
+
+
+declare
+   l_job_exists number;
+begin
+   select count(*) into l_job_exists
+     from user_scheduler_jobs
+    where job_name = 'STATISTICS_COLUMNS_JOB'
+          ;
+
+   if l_job_exists = 1 then
+      dbms_scheduler.drop_job(job_name => 'RMAN_DAILY_INCRELV1');
+   end if;
+end;
+
+
+
+
+https://oracle-base.com/articles/10g/scheduler-10g
 
 ---------------------------------------------------------------------------------------------------------------------------------------------------

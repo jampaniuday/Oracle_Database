@@ -116,6 +116,32 @@ SHOW CON_NAME;
 
 
 
+/*todos os processo oracle database*/
+ps -ef | grep orcl
+/*orcl nome do banco de dados-instancia*/
+
+
+
+/*ativar o servico listener*/
+lsnrctl start
+
+
+/*ativar o servico web*/
+emctl start dbconsole;
+
+
+/*testar tns*/
+tnsping localhost
+
+
+
+/*dicionairo de dados*/
+select * from dict;
+select TABLE_NAME from dict;
+/*2628 rows selected*/
+
+
+
 
 /**********************************************************************************************************
 *											REFERENCIAS 												  *

@@ -1,0 +1,313 @@
+Backup and Recovery Users Guide 11g 
+
+
+
+---------------------------------------------------------------------------------------------------------------------------------
+Part I Overview of Backup and Recovery
+
+
+	1 Introduction to Backup and Recovery
+
+		Purpose of Backup and Recovery
+			-Planning and testing responses to different kinds of failures
+ 			-Configuring the database environment for backup and recovery
+			-Setting up a backup schedule
+			-Monitoring the backup and recovery environment
+			-Troubleshooting backup problems
+			-Recovering from data loss if the need arises
+			-As a backup administrator, you may also be asked to perform other duties that are related to backup and recovery:
+			-Data preservation, which involves creating a database copy for long-term storage
+			-Data transfer, which involves moving data from one database or one host to another
+
+
+Data Protection
+	As a backup administrator, your primary job is making and monitoring backups for
+	data protection. A backup is a copy of data of a database that you can use to
+	reconstruct data. A backup can be either a physical backup or a logical backup.
+
+	Physical backups are copies of the physical files used in storing and recovering a
+	database. These files include data files, control files, and archived redo logs.
+	Ultimately, every physical backup is a copy of files that store database information to
+	another location, whether on disk or on offline storage media such as tape.
+
+	Logical backups contain logical data such as tables and stored procedures. You can use
+	Oracle Data Pump to export logical data to binary files, which you can later import
+	into the database. The Data Pump command-line clients expdp and impdp use the
+	DBMS_DATAPUMP and DBMS_METADATA PL/SQL packages.
+
+
+	While several problems can halt the normal operation of an Oracle database or affect
+	database I/O operations, only the following typically require DBA intervention and
+	data recovery: media failure, user errors, and application errors. Other failures may
+	require DBA intervention without causing data loss or requiring recovery from
+	backup. For example, you may need to restart the database after an instance failure or
+	allocate more disk space after statement failure because of a full data file.
+
+
+
+
+
+
+	Media Failures
+		A media failure is a physical problem with a disk that causes a failure of a read from or
+		write to a disk file that is required to run the database. Any database file can be
+		vulnerable to a media failure. The appropriate recovery technique following a media
+		failure depends on the files affected and the types of backup available.
+		One particularly important aspect of backup and recovery is developing a disaster
+		recovery strategy to protect against catastrophic data loss, for example, the loss of an
+		entire database host.
+
+
+	User Errors
+		User errors occur when, either due to an error in application logic or a manual
+		mistake, data in a database is changed or deleted incorrectly. User errors are estimated
+		to be the greatest single cause of database downtime.
+		Data loss due to user error can be either localized or widespread. An example of
+		localized damage is deleting the wrong person from the employees table. This type of
+		damage requires surgical detection and repair. An example of widespread damage is a
+		batch job that deletes the company orders for the current month. In this case, drastic
+		action is required to avoid a extensive database downtime.
+		While user training and careful management of privileges can prevent most user
+		errors, your backup strategy determines how gracefully you recover the lost data
+		when user error does cause data loss.
+
+
+
+
+
+	Application Errors
+		Sometimes a software malfunction can corrupt data blocks. In a physical corruption,
+		which is also called a media corruption, the database does not recognize the block at
+		all: the checksum is invalid, the block contains all zeros, or the header and footer of
+		the block do not match. If the corruption is not extensive, then you can often repair it
+		easily with block media recovery
+
+
+
+
+
+
+Data Preservation
+		Data preservation is related to data protection, but serves a different purpose. For
+		example, you may need to preserve a copy of a database as it existed at the end of a
+		business quarter. This backup is not part of the disaster recovery strategy. The media
+		to which these backups are written are often unavailable after the backup is complete.
+		You may send the tape into fire storage or ship a portable hard drive to a testing
+		facility. RMAN provides a convenient way to create a backup and exempt it from your
+		backup retention policy. This type of backup is known as an archival backup
+
+
+
+
+
+
+Data Transfer
+	In some situations you may need to take a backup of a database or database
+	component and move it to another location. For example, you can use Recovery
+	Manager (RMAN) to create a database copy, create a tablespace copy that can be
+	imported into another database, or move an entire database from one platform to
+	another. These tasks are not strictly speaking part of a backup and recovery strategy,
+	but they do require the use of database backups, and so may be included in the duties
+	of a backup administrator
+
+
+
+
+
+
+Data Transfer
+	In some situations you may need to take a backup of a database or database
+component and move it to another location. For example, you can use Recovery
+Manager (RMAN) to create a database copy, create a tablespace copy that can be
+imported into another database, or move an entire database from one platform to
+another. These tasks are not strictly speaking part of a backup and recovery strategy,
+but they do require the use of database backups, and so may be included in the duties
+of a backup administrator.
+
+
+
+
+
+
+
+
+
+
+Oracle Backup and Recovery Solutions
+	When implementing a backup and recovery strategy, you have the following solutions
+	available:
+
+	Recovery Manager is fully integrated with the Oracle database to perform a range
+	of backup and recovery activities, including maintaining an RMAN repository of
+	historical data about backups. You can access RMAN through the command line
+	or through Oracle Enterprise Manager.
+
+	User-managed backup and recovery
+	In this solution, you perform backup and recovery with a mixture of host
+	operating system commands and SQL*Plus recovery commands.You are
+	responsible for determining all aspects of when and how backups and recovery
+	are done.
+
+
+	-Incremental backups
+		An incremental backup stores only blocks changed since a previous backup.
+		Thus, they provide more compact backups and faster recovery, thereby reducing
+		the need to apply redo during data file media recovery. If you enable block
+		change tracking, then you can improve performance by avoiding full scans of
+		every input data file. You use the BACKUP INCREMENTAL command to perform
+		incremental backups.
+
+
+	-Block media recovery
+		You can repair a data file with only a small number of corrupt data blocks without
+		taking it offline or restoring it from backup. You use the RECOVER BLOCK command
+		to perform block media recovery.
+
+	-Binary compression
+		A binary compression mechanism integrated into Oracle Database reduces the
+		size of backups.
+
+	-Encrypted backups
+		RMAN uses backup encryption capabilities integrated into Oracle Database to
+		store backup sets in an encrypted format. To create encrypted backups on disk, the
+		database must use the Advanced Security Option. To create encrypted backups
+		directly on tape, RMAN must use the Oracle Secure Backup SBT interface, but
+		does not require the Advanced Security Option.
+
+	-Automated database duplication
+		Easily create a copy of your database, supporting various storage configurations,
+		including direct duplication between ASM databases.
+
+
+	-Cross-platform data conversion
+		Whether you use RMAN or user-managed methods, you can supplement physical
+		backups with logical backups of schema objects made with Data Pump Export utility.
+		You can later use Data Pump Import to re-create data after restore and recovery.
+		Logical backups are mostly beyond the scope of the backup and recovery
+		documentation.
+
+
+
+
+
+Oracle Flashback Technology
+	As explained in Oracle Database Concepts, Oracle Flashback Technology complements
+	your physical backup and recovery strategy. This set of features provides an additional
+	layer of data protection. Specifically, you can use the various features of Oracle
+	Flashback to view past states of data and rewind your database without restoring
+	backups or performing point-in-time recovery. In general, flashback features are more
+	efficient and less disruptive than media recovery in most situations in which they
+	apply
+
+
+
+
+
+Data Recovery Advisor
+	Oracle Database includes a Data Recovery Advisor tool that automatically diagnoses
+	persistent data failures, presents appropriate repair options, and executes repairs at
+	your request. Data Recovery Advisor provides a single point of entry for Oracle
+	backup and recovery solutions. You can use Data Recovery Advisor through the
+	Enterprise Manager Database Control or Grid Control console or through the RMAN
+	command-line client.
+	A database failure usually manifests itself as a set of symptoms: error messages, alerts,
+	trace files and dumps, and failed data integrity checks. Data Recovery Advisor
+	automatically diagnoses and informs you of these failures. For Data Recovery Advisor,
+	a failure is a persistent data corruption that can be directly mapped to a set of repair
+	actions. Each failure has a status of open or closed. Each failure also has a priority of
+	critical, high, or low.
+	Failures are detected by data integrity checks, which are diagnostic procedures
+	executed to assess the health of the database or its components. If a data integrity
+	check reveals a failure, then Data Recovery Advisor automatically assesses the effect
+	of a set of failures and maps it to a set of repair options. Usually, Data Recovery
+	Advisor presents both automated and manual repair options.
+
+	Data Recovery Advisor determines the best automated repair option and its effect on
+	the database. The repair option may include repairs such as data file restore and
+	recovery, media recovery, Flashback Database, and so on. Before presenting an
+	automated repair option, Data Recovery Advisor validates it for the specific
+	environment and the availability of media components required to complete the
+	proposed repair.
+
+
+	If you choose an automated repair option, then RMAN coordinates sessions on the
+	Oracle database to perform the repair for you. The Data Recovery Advisor tool verifies
+	the repair success and closes the appropriate failures.
+
+
+
+
+---------------------------------------------------------------------------------------------------------------------------------
+
+
+
+
+
+
+
+
+2  Getting Started with RMAN 2
+
+
+
+
+
+	Overview of the RMAN Environment
+		-Recovery Manager (RMAN) is an Oracle Database client that performs backup and
+		recovery tasks on your databases and automates administration of your backup
+		strategies. It greatly simplifies backing up, restoring, and recovering database files.
+
+		-A target database
+			An Oracle database to which RMAN is connected with the TARGET keyword. A
+			target database is a database on which RMAN is performing backup and recovery
+			operations. RMAN always maintains metadata about its operations on a database
+			in the control file of the database. The RMAN metadata is known as the RMAN 
+
+		-The RMAN client
+			An Oracle Database executable that interprets commands, directs server sessions
+			to execute those commands, and records its activity in the target database control
+			file. The RMAN executable is automatically installed with the database and is typically located in the same directory as the other database executables. For
+			example, the RMAN client on Linux is located in $ORACLE_HOME/bin
+
+
+		Some environments use the following optional components:
+			-A fast recovery area
+				A disk location in which the database can store and manage files related to backup
+				and recovery. You set the fast recovery area location and size with the DB_
+				RECOVERY_FILE_DEST and DB_RECOVERY_FILE_DEST_SIZE initialization parameters
+
+			-A media manager
+				An application required for RMAN to interact with sequential media devices such
+				as tape libraries. A media manager controls these devices during backup and
+				recovery, managing the loading, labeling, and unloading of media. Media
+				management devices are sometimes called SBT (system backup to tape) devices.
+
+
+			-A recovery catalog
+				-A separate database schema used to record RMAN activity against one or more
+				target databases. A recovery catalog preserves RMAN repository metadata if the
+				control file is lost, making it much easier to restore and recover following the loss
+				of the control file. The database may overwrite older records in the control file, but
+				RMAN maintains records forever in the catalog unless the records are deleted by
+				the user.
+
+
+
+
+
+
+
+
+
+	Starting RMAN and Connecting to a Database
+
+
+
+
+
+
+
+---------------------------------------------------------------------------------------------------------------------------------
+
+
+

@@ -19,9 +19,34 @@
 #************************************************#
 
 
-#variaveis
+#Export envirements
+# ------------------------------------
+	export ORACLE_HOME=/u01/app/oracle/product/11.2.0/dbhome_1
+	export ORACLE_SID=orcl
+	PATH=$ORACLE_HOME/bin:$PATH
+
+
+
+
+#Check the login user to be "oracle"
+# ------------------------------------
+
+  USR=$(id |cut -d"(" -f2 | cut -d ")" -f1) #or command $id -un 
+
+  if [ $USR != "oracle" ]
+    then
+      echo "You should login as oracle user"
+      exit 1
+  fi
+
+
+#Variaveis
+# ------------------------------------
         #localizacao do diretorio de backup
         RMANBACKUP_LOCATION=/backups
+
+        #nome da instancia e banco de dados
+        ORACLENAME=ORCL
 
         #atribuir uma data a variavel date
         DATE=$(date +"%d-%m-%y")
@@ -33,27 +58,31 @@
         RMANLOG=/home/oracle/scripts/logs
 
         #criar diretorio para organizar backup
-        DIR_BKP_DAYS=${RMANBACKUP_LOCATION}/${DATE}
+        DIR_BKP_DAYS=${RMANBACKUP_LOCATION}/${ORACLENAME}/${DATE}
 
         #criar diretorio para organizar logs da saida do scripts
-        DIR_LOGS=${RMANLOG}/${DATE}
+        DIR_LOGS=${RMANLOG}/${ORACLENAME}/${DATE}
 
 
-#criacao de diretorio para organizar backups 		
+
+#Criacao de diretorio para organizar backups 		
+# ------------------------------------
 		if [ -d "${DIR_BKP_DAYS}" ];then
 			echo " o diretorio ${DIR_BKP_DAYS} existe ja"
 		else
 			echo " o diretorio ${DIR_BKP_DAYS} nao existe vamos criar o diretorio"
-			mkdir ${DIR_BKP_DAYS}
+			mkdir -p ${DIR_BKP_DAYS}
 		fi
 
 
-#criacao de diretorio para organizar logs da saida do scripts 	
+
+#Criacao de diretorio para organizar logs da saida do scripts 	
+# ------------------------------------
 		if [ -d "${DIR_LOGS}" ];then
 			echo " o diretorio ${DIR_LOGS} existe ja"
 		else
 			echo " o diretorio ${DIR_LOGS} nao existe vamos criar o diretorio"
-			mkdir ${DIR_LOGS}
+			mkdir -p ${DIR_LOGS}
 		fi		
 
 
@@ -67,19 +96,23 @@
         sql 'alter system switch logfile';
         sql 'ALTER SYSTEM CHECKPOINT';
 
-        CONFIGURE CONTROLFILE AUTOBACKUP FORMAT FOR DEVICE TYPE DISK TO '${DIR_BKP_DAYS}/%F_increLV0_${DATE}_${TIME}';
-        BACKUP INCREMENTAL LEVEL 0 DATABASE TAG 'weekly_increLV0_db_bkup' FORMAT '${DIR_BKP_DAYS}/%d_increLV0_${DATE}_${TIME}_%s_%p.bck';
+	RUN{
+        	CONFIGURE CONTROLFILE AUTOBACKUP FORMAT FOR DEVICE TYPE DISK TO '${DIR_BKP_DAYS}/%F_increLV0_${DATE}_${TIME}';
+	        BACKUP INCREMENTAL LEVEL 0 DATABASE TAG 'weekly_increLV0_db_bkup' FORMAT '${DIR_BKP_DAYS}/%d_increLV0_${DATE}_${TIME}_%s_%p.bck';
+	}
+	exit
 
 
+        echo ========== Completed at ${DATE} ==========
 
 
 #****************************************************************************************************************#
 #                                                   REFERENCIAS                                                  #
-#https://dbatricksworld.com/																					 #
-#http://www.dba-oracle.com/t_rman_scheduling_backup.htm 														 #
-#http://oracledbawings.blogspot.com/2011/05/how-to-schedule-rman-daily-backup.html								 #
-#https://www.ostechnix.com/find-size-directory-linux/															 #
-#https://e-tinet.com/linux/crontab/ 																			 #
+#https://dbatricksworld.com/																					                                           #
+#http://www.dba-oracle.com/t_rman_scheduling_backup.htm 														                             #
+#http://oracledbawings.blogspot.com/2011/05/how-to-schedule-rman-daily-backup.html								               #
+#https://www.ostechnix.com/find-size-directory-linux/															                               #
+#https://e-tinet.com/linux/crontab/ 																			                                       #
 #****************************************************************************************************************#
 
 
@@ -89,9 +122,31 @@
 
 
 
+SELECT * FROM V$FLASH_RECOVERY_AREA_USAGE;
+DB_RECOVERY_FILE_DEST 
+/disk1/flash_recovery_area
+
+CONFIGURE RETENTION POLICY TO RECOVERY WINDOW OF 7 DAYS;
+CONFIGURE RETENTION POLICY TO NONE;
+
+ALTER DATABASE ADD LOGFILE;
+
+db_create_onlie_log_des_1 = '+FRA'
+
+export ORACLE_HOME=/u01/app/oracle/product/11.2.0/dbhome_1
+export ORACLE_SID=orcl
+PATH=$ORACLE_HOME/bin:$PATH
 
 
-
+#files Fast Recovery Are
+	#CONTROLFILE 
+	#ONLINELOG -> .log
+	#ARCHIVELOG 
+	#BACKUPPIECE 
+	#IMAGECOPY 
+	#FLASHBACKLOG 
+	#backuppset
+https://docs.oracle.com/cd/E11882_01/server.112/e18951/asmfiles.htm#OSTMG94200
 
 
 
@@ -152,8 +207,6 @@
 
 
 
-
-
         rman target / <<EOF>> ${DIR_LOGS}/rman_script2_daily_increLV1${DATE}_${TIME}.log
         set echo on;
    
@@ -164,7 +217,6 @@
 		
 
         CONFIGURE CONTROLFILE AUTOBACKUP FORMAT FOR DEVICE TYPE DISK TO '${DIR_BKP_DAYS}/%F_increLV0_${DATE}_${TIME}';
-        ALLOCATE CHANNEL ch1 DEVICE TYPE DISK;
         BACKUP INCREMENTAL LEVEL 1 DATABASE TAG 'daily_increLV1_db_bkup'  FORMAT '${DIR_BKP_DAYS}/%d_increLV0_${DATE}_${TIME}_%s_%p.bck';
 
 
@@ -381,9 +433,19 @@ END;
 
 
 begin
-    dbms_scheduler.run_job(job_name=>'RMAN_WEEKLY_INCRELV0'); -- true is default
+     dbms_scheduler.run_job(job_name=>'RMAN_WEEKLY_INCRELV0'); -- true is default
 end;
 /
+
+begin
+     dbms_scheduler.run_job(job_name=>'RMAN_WEEKLY_INCRELV0',use_current_session => TRUE); -- true is default
+end;
+/
+
+
+
+
+
 
 
 exec dbms_scheduler.create_credential(credential_name => 'ORACLE_OS_CREDS',username => 'oracle', password => 'oracle');
@@ -410,7 +472,13 @@ END;
 /
 
 
-
+BEGIN
+  DBMS_SCHEDULER.DROP_JOB
+  (
+     job_name         => 'RMAN_WEEKLY_INCRELV0'
+  );
+END;
+/
 
 
 
@@ -642,5 +710,34 @@ end;
 
 
 https://oracle-base.com/articles/10g/scheduler-10g
+
+---------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+
+
+
+
+
+enterprise menager 
+
+https://192.168.15.175:1158/em/console/aboutApplication
+
+
+192.168.15.175
+
+system 
+oracle
+
+
+
+
+/etc/oratab
+
+
+
+
+SELECT TABLE_NAME FROM ALL_TABLES WHERE TABLESPACE_NAME = 'SOE';
+
 
 ---------------------------------------------------------------------------------------------------------------------------------------------------

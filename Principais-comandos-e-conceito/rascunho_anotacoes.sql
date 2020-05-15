@@ -8,7 +8,7 @@ Tasks:
 3- SwingBeanch
 4- DBA_SCHEDULER_JOBS
 5- Scripts
-6- RLWRAP
+6- RLWRAP 
 7- Command nohup refes: https://www.linuxdescomplicado.com.br/2017/07/saiba-como-manter-um-comando-executando-mesmo-depois-de-encerrar-uma-sessao-remota-ssh.html
 
 
@@ -22,8 +22,59 @@ Tasks:
 
 
 ---------------------------------------------------------------------------------------------------------------------------------
+6- RLWRAP 
 
 
+
+su -
+tar -xvf rlwrap_0.41.orig.tar.gz
+cd rlwrap*
+./configure
+make 
+make check
+make install
+
+exit 
+su - oracle 
+
+
+configurar .bash_profile
+#Aliasing rlwrap
+alias rl_sqlplus='rlwrap sqlplus'
+alias rl_rman='rlwrap rman'
+alias rl_asmcmd='rlwrap asmcmd'
+#end Aliasing rlwrap
+
+#setar o .bash_profile
+. .bash_profile
+
+#test
+rl_sqlplus / as sysdba
+
+
+
+
+refes:https://www.youtube.com/watch?v=KGUha05urxk&t=14s
+      https://oracle-base.com/articles/linux/rlwrap
+      http://utopia.knoware.nl/~hlub/uck/rlwrap/
+      http://www.dba-oracle.com/t_rlwrap.htm
+      https://src.fedoraproject.org/repo/pkgs/rlwrap/rlwrap-0.41.tar.gz/2b570314a4f40a7818d156c158636ba9/
+      *download: https://launchpad.net/ubuntu/+source/rlwrap/0.41-1build2 -> rlwrap_0.41.orig.tar.gz
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+---------------------------------------------------------------------------------------------------------------------------------
 
 
 

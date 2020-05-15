@@ -118,7 +118,7 @@ SHOW CON_NAME;
 
 /*todos os processo oracle database*/
 ps -ef | grep orcl
-/*orcl nome do banco de dados-instancia*/
+/*orcl nome do banco de dados/instancia*/
 
 
 
@@ -139,6 +139,10 @@ tnsping localhost
 select * from dict;
 select TABLE_NAME from dict;
 /*2628 rows selected*/
+
+
+
+
 
 
 

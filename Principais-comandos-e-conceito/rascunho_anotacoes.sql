@@ -8,11 +8,9 @@ Tasks:
 3- SwingBeanch
 4- DBA_SCHEDULER_JOBS
 5- Scripts
-6- RLWRAP 
-7- Command nohup refes: https://www.linuxdescomplicado.com.br/2017/07/saiba-como-manter-um-comando-executando-mesmo-depois-de-encerrar-uma-sessao-remota-ssh.html
-
-
-
+6- RLWRAP -OK
+7- Command nohup -OK
+8- Listener 
 
 
 
@@ -101,19 +99,8 @@ refes: https://www.linuxdescomplicado.com.br/2017/07/saiba-como-manter-um-comand
 
 
 ---------------------------------------------------------------------------------------------------------------------------------
-pgrap
 
 
-
-
-
-
-
-
-
-
----------------------------------------------------------------------------------------------------------------------------------
-https://sqlmaria.com/
 
 
 

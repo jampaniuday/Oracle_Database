@@ -21,10 +21,10 @@
 
 #Export envirements
 # ------------------------------------
-	export ORACLE_HOME=/u01/app/oracle/product/11.2.0/dbhome_1
-	export ORACLE_SID=orcl
-	PATH=$ORACLE_HOME/bin:$PATH
-
+	#export ORACLE_HOME=/u01/app/oracle/product/11.2.0/dbhome_1
+	#export ORACLE_SID=orcl
+	#PATH=$ORACLE_HOME/bin:$PATH
+  #estao setadas no .bash_profile do usuario oracle 
 
 
 
@@ -58,20 +58,21 @@
         RMANLOG=/home/oracle/scripts/logs
 
         #criar diretorio para organizar backup
-        DIR_BKP_DAYS=${RMANBACKUP_LOCATION}/${ORACLENAME}/${DATE}
+        DIR_BKP_DAYS=${RMANBACKUP_LOCATION}/${ORACLENAME}
 
         #criar diretorio para organizar logs da saida do scripts
         DIR_LOGS=${RMANLOG}/${ORACLENAME}/${DATE}
 
 
 
+
 #Criacao de diretorio para organizar backups 		
 # ------------------------------------
-		if [ -d "${DIR_BKP_DAYS}" ];then
-			echo " o diretorio ${DIR_BKP_DAYS} existe ja"
+		if [ -d "${DIR_BKP_DAYS}/{backupset,/controlfile}/${DATE}" ];then
+			echo " o diretorio ${DIR_BKP_DAYS}/{backupset,/controlfile}/${DATE} existe ja"
 		else
-			echo " o diretorio ${DIR_BKP_DAYS} nao existe vamos criar o diretorio"
-			mkdir -p ${DIR_BKP_DAYS}
+			echo " o diretorio ${DIR_BKP_DAYS}/{backupset,/controlfile}/${DATE} nao existe vamos criar o diretorio"
+			mkdir -p ${DIR_BKP_DAYS}/{backupset,/controlfile}/${DATE}
 		fi
 
 
@@ -97,13 +98,13 @@
         sql 'ALTER SYSTEM CHECKPOINT';
 
 	RUN{
-        	CONFIGURE CONTROLFILE AUTOBACKUP FORMAT FOR DEVICE TYPE DISK TO '${DIR_BKP_DAYS}/%F_increLV0_${DATE}_${TIME}';
-	        BACKUP INCREMENTAL LEVEL 0 DATABASE TAG 'weekly_increLV0_db_bkup' FORMAT '${DIR_BKP_DAYS}/%d_increLV0_${DATE}_${TIME}_%s_%p.bck';
+        	CONFIGURE CONTROLFILE AUTOBACKUP FORMAT FOR DEVICE TYPE DISK TO '${DIR_BKP_DAYS}/{backupset,/controlfile}/${DATE}/%F_increLV0_${DATE}_${TIME}';
+	        BACKUP INCREMENTAL LEVEL 0 DATABASE TAG 'weekly_increLV0_db_bkup' FORMAT '${DIR_BKP_DAYS}/{backupset,/controlfile}/${DATE}/%d_increLV0_${DATE}_${TIME}_%s_%p.bck';
 	}
 	exit
 
-
-        echo ========== Completed at ${DATE} ==========
+ 
+  echo ========== Completed at ${DATE} ==========
 
 
 #****************************************************************************************************************#
@@ -119,6 +120,36 @@
 
 
 
+
+mkdir -p /backups/ORCL/{backupset,/controlfile}/date
+
+
+
+
+-p (–parents): a opção -p habilita a criação de diretórios parentes quando necessário;
+
+
+
+mkdir -p {documentos/{imagens/{wallpapers/,icons/,fotos/}}}
+
+mkdir -p /backups/ORCL/{backupset,/controlfile}/date
+
+
+/backup/ORCL/controfile
+/backup/ORCL/
+
+
+{imagens/{wallpapers/,icons/,fotos/}
+
+
+
+
+CONFIGURE CONTROLFILE AUTOBACKUP FORMAT FOR DEVICE TYPE DISK TO '/u01/app/oracle/fast_recovery_area/%F';
+
+
+
+
+/u01/app/oracle/fast_recovery_area/XE/backupset/2020_05_15/o1_mf_nnndf_TAG20200515T210114_hcycbby4_.bkp
 
 
 
@@ -149,6 +180,9 @@ PATH=$ORACLE_HOME/bin:$PATH
 https://docs.oracle.com/cd/E11882_01/server.112/e18951/asmfiles.htm#OSTMG94200
 
 
+Finalizado Control File and SPFILE Autobackup em 15/05/20
+
+CONFIGURE SNAPSHOT CONTROLFILE NAME TO '/u01/app/oracle/product/11.2.0/xe/dbs/snapcf_XE.f'; # default
 
 
 ---------------------------------------------------------------------------------------------------------------------------------------------------

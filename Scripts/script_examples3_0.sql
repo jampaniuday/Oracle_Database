@@ -48,6 +48,12 @@
         #nome da instancia e banco de dados
         ORACLENAME=ORCL
 
+        #nome do diretorio backupset
+        F_BACKUPSET=backupset
+
+        #nome do diretoiro controlfile
+        F_CONTROLFILE=controlfile
+
         #atribuir uma data a variavel date
         DATE=$(date +"%d-%m-%y")
 
@@ -68,8 +74,8 @@
 
 #Criacao de diretorio para organizar backups 		
 # ------------------------------------
-		if [ -d "${DIR_BKP_DAYS}/{backupset,/controlfile}/${DATE}" ];then
-			echo " o diretorio ${DIR_BKP_DAYS}/{backupset,/controlfile}/${DATE} existe ja"
+		if [ -d "${DIR_BKP_DAYS}/{${F_BACKUPSET}},/${F_CONTROLFILE}}/${DATE}" ];then
+			echo " o diretorio ${DIR_BKP_DAYS}/{${F_BACKUPSET},/${F_CONTROLFILE}}}/${DATE} existe ja"
 		else
 			echo " o diretorio ${DIR_BKP_DAYS}/{backupset,/controlfile}/${DATE} nao existe vamos criar o diretorio"
 			mkdir -p ${DIR_BKP_DAYS}/{backupset,/controlfile}/${DATE}
@@ -98,10 +104,10 @@
         sql 'ALTER SYSTEM CHECKPOINT';
 
 	RUN{
-        	CONFIGURE CONTROLFILE AUTOBACKUP FORMAT FOR DEVICE TYPE DISK TO '${DIR_BKP_DAYS}/controlfile/${DATE}/%F_increLV0_${DATE}_${TIME}';
-	        BACKUP INCREMENTAL LEVEL 0 DATABASE TAG 'weekly_increLV0_db_bkup' FORMAT '${DIR_BKP_DAYS}/backupset/${DATE}/%d_increLV0_${DATE}_${TIME}_%s_%p.bck';
+        	CONFIGURE CONTROLFILE AUTOBACKUP FORMAT FOR DEVICE TYPE DISK TO '${DIR_BKP_DAYS}/${F_CONTROLFILE}/${DATE}/%F_increLV0_${DATE}_${TIME}';
+	        BACKUP INCREMENTAL LEVEL 0 DATABASE TAG 'weekly_increLV0_db_bkup' FORMAT '${DIR_BKP_DAYS}/${F_BACKUPSET}/${DATE}/%d_increLV0_${DATE}_${TIME}_%s_%p.bck';
 	}
-	exit
+	#exit
 
  
   echo ========== Completed at ${DATE} ==========

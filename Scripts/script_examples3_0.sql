@@ -100,8 +100,8 @@
         set echo on;
         CONFIGURE CONTROLFILE AUTOBACKUP ON;
 
-        #sql 'alter system switch logfile';
-        #sql 'ALTER SYSTEM CHECKPOINT';
+        sql 'alter system switch logfile';
+        sql 'ALTER SYSTEM CHECKPOINT';
 
 	
         CONFIGURE CONTROLFILE AUTOBACKUP FORMAT FOR DEVICE TYPE DISK TO '${DIR_BKP_DAYS}/${F_CONTROLFILE}/${DATE}/%F_increLV0_${DATE}_${TIME}';

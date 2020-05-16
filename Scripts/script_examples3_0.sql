@@ -46,7 +46,7 @@
         RMANBACKUP_LOCATION=/backups
 
         #nome da instancia e banco de dados
-        ORACLENAME=ORCL
+        ORACLENAME=$ORACLE_SID
 
         #nome do diretorio backupset
         F_BACKUPSET=backupset
@@ -105,9 +105,9 @@
 
 	
         CONFIGURE CONTROLFILE AUTOBACKUP FORMAT FOR DEVICE TYPE DISK TO '${DIR_BKP_DAYS}/${F_CONTROLFILE}/${DATE}/%F_increLV0_${DATE}_${TIME}';
-	     BACKUP INCREMENTAL LEVEL 0 DATABASE TAG 'weekly_increLV0_db_bkup' FORMAT '${DIR_BKP_DAYS}/${F_BACKUPSET}/${DATE}/%d_increLV0_${DATE}_${TIME}_%s_%p.bck';	
-       
-	#exit
+	      BACKUP INCREMENTAL LEVEL 0 DATABASE TAG 'weekly_increLV0_db_bkup' FORMAT '${DIR_BKP_DAYS}/${F_BACKUPSET}/${DATE}/%d_increLV0_${DATE}_${TIME}_%s_%p.bck';	
+
+	exit
 
  
   #echo ========== Completed at ${DATE} ==========

@@ -74,11 +74,11 @@
 
 #Criacao de diretorio para organizar backups 		
 # ------------------------------------
-		if [ -d "${DIR_BKP_DAYS}/{${F_BACKUPSET}},/${F_CONTROLFILE}}/${DATE}" ];then
-			echo " o diretorio ${DIR_BKP_DAYS}/{${F_BACKUPSET},/${F_CONTROLFILE}}}/${DATE} existe ja"
+		if [ -d "${DIR_BKP_DAYS}/{${F_BACKUPSET},/${F_CONTROLFILE}}/${DATE}" ];then
+			echo " o diretorio ${DIR_BKP_DAYS}/{${F_BACKUPSET},/${F_CONTROLFILE}}/${DATE} existe ja"
 		else
-			echo " o diretorio ${DIR_BKP_DAYS}/{backupset,/controlfile}/${DATE} nao existe vamos criar o diretorio"
-			mkdir -p ${DIR_BKP_DAYS}/{backupset,/controlfile}/${DATE}
+			echo " o diretorio ${DIR_BKP_DAYS}/{${F_BACKUPSET},/${F_CONTROLFILE}}/${DATE} nao existe vamos criar o diretorio"
+			mkdir -p ${DIR_BKP_DAYS}/{${F_BACKUPSET},/${F_CONTROLFILE}}/${DATE}
 		fi
 
 
@@ -100,17 +100,16 @@
         set echo on;
         CONFIGURE CONTROLFILE AUTOBACKUP ON;
 
-        sql 'alter system switch logfile';
-        sql 'ALTER SYSTEM CHECKPOINT';
+        #sql 'alter system switch logfile';
+        #sql 'ALTER SYSTEM CHECKPOINT';
 
-	RUN{
-        	CONFIGURE CONTROLFILE AUTOBACKUP FORMAT FOR DEVICE TYPE DISK TO '${DIR_BKP_DAYS}/${F_CONTROLFILE}/${DATE}/%F_increLV0_${DATE}_${TIME}';
-	        BACKUP INCREMENTAL LEVEL 0 DATABASE TAG 'weekly_increLV0_db_bkup' FORMAT '${DIR_BKP_DAYS}/${F_BACKUPSET}/${DATE}/%d_increLV0_${DATE}_${TIME}_%s_%p.bck';
-	}
+	
+        	#CONFIGURE CONTROLFILE AUTOBACKUP FORMAT FOR DEVICE TYPE DISK TO '${DIR_BKP_DAYS}/${F_CONTROLFILE}/${DATE}/%F_increLV0_${DATE}_${TIME}';
+	        #BACKUP INCREMENTAL LEVEL 0 DATABASE TAG 'weekly_increLV0_db_bkup' FORMAT '${DIR_BKP_DAYS}/${F_BACKUPSET}/${DATE}/%d_increLV0_${DATE}_${TIME}_%s_%p.bck';	}
 	#exit
 
  
-  echo ========== Completed at ${DATE} ==========
+  #echo ========== Completed at ${DATE} ==========
 
 
 #****************************************************************************************************************#

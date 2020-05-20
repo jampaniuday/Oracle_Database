@@ -482,6 +482,34 @@ DBMS_SCHEDULER.CREATE_JOB | DBMS_SCHEDULER.CREATE_PROGRAM   | DBMS_SCHEDULER.cre
 DESC DBMS_SCHEDULER
 
 
+#Estrutura completa da package DBMS_JOB
+DESC DBMS_JOB
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

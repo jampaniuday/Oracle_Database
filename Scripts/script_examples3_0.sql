@@ -305,6 +305,17 @@ CONFIGURE SNAPSHOT CONTROLFILE NAME TO '/u01/app/oracle/product/11.2.0/xe/dbs/sn
 
 
 
+
+
+# Example of job definition:
+# .—————- minute (0 – 59)
+# | .————- hour (0 – 23)
+# | | .———- day of month (1 – 31)
+# | | | .——- month (1 – 12) OR jan,feb,mar,apr …
+# | | | | .—- day of week (0 – 6) (Sunday=0 or 7) OR sun,mon,tue,wed,thu,fri,sat
+# | | | | |
+# * * * * * command to be executed
+
 ---------------------------------------------------------------------------------------------------------------------------------------------------
 
 
@@ -598,6 +609,7 @@ BYDAY=MON,TUE,WED,THU,FRI;
 
 
 
+
 SELECT JOB_NAME FROM DBA_SCHEDULER_JOBS WHERE JOB_NAME = 'RMAN_WEEKLY_INCRELV0';
 
 
@@ -778,6 +790,8 @@ oracle
 
 
 SELECT TABLE_NAME FROM ALL_TABLES WHERE TABLESPACE_NAME = 'SOE';
+
+SELECT COUNT(*) FROM SOE.CUSTOMERS;
 
 
 ---------------------------------------------------------------------------------------------------------------------------------------------------

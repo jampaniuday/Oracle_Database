@@ -142,7 +142,8 @@ select TABLE_NAME from dict;
 
 
 
-
+#vemos a estrutura completa da package DBMS_SCHEDULER
+desc dbms_scheduler
 
 
 

@@ -478,8 +478,42 @@ DBMS_SCHEDULER | DBMS_JOB
 DBMS_SCHEDULER.CREATE_JOB | DBMS_SCHEDULER.CREATE_PROGRAM   | DBMS_SCHEDULER.create_schedule| DBMS_SCHEDULER.CREATE_WINDOW | DBMS_SCHEDULER.CREATE_CHAIN 
 
 
+#Estrutura completa da package DBMS_SCHEDULER
+DESC DBMS_SCHEDULER
 
 
 
+
+
+
+
+refes: 
+obs:
+desc: 
+
+---------------------------------------------------------------------------------------------------------------------------------
+Executar scripts e exportar csv usando SQL*Plus
+
+
+alter session set nls_timestamp_format='dd/mm/yyyy HH24:mi:ss';
+alter session set nls_date_format='dd/mm/yyyy HH24:mi:ss';
+
+set colsep ';'     -- Configura o separador de colunas como sendo ';'
+set pagesize 0     -- Remove os cabeçalhos
+set trimspool on   -- Remove os espaços em branco inseridos pelo sqlplus
+set linesize X     -- Tamanho máximo que terá sua linha
+set wrap off       -- Desabilita a quebra de linha. Cuidado pode cortar se for maior que linesize
+
+spool output.csv   -- Configura o arquivo que será escrito
+
+
+
+
+
+
+
+refes: https://makandracards.com/zeroglosa/40039-executar-scripts-e-exportar-csv-usando-sql-plus
+obs:
+desc: 
 
 ---------------------------------------------------------------------------------------------------------------------------------

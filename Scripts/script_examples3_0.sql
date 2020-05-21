@@ -451,9 +451,9 @@ BEGIN
    job_type           =>  'executable',
    job_action         =>  '/home/oracle/scripts/rman_script2_daily_increLV1.sh',
    repeat_interval    =>  'FREQ=DAILY;BYHOUR=6;BYMINUTE=0', 
-   enabled            =>    TRUE,
+   enabled            =>   TRUE,
    auto_drop          =>   FALSE,
-   comments           =>  'Job to run daily incremental backup');
+   comments           =>  'Job to run daily incremental backup increLV1 in 6H');
 END;
 /
 

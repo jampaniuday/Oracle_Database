@@ -489,6 +489,100 @@ DESC DBMS_JOB
 
 
 
+CREATE_CREDENTIAL Procedure
+This procedure creates a stored username/password pair in a database object called a credential.
+
+Syntax
+
+DBMS_SCHEDULER.CREATE_CREDENTIAL (
+   credential_name         IN VARCHAR2,
+   username                IN VARCHAR2,
+   password                IN VARCHAR2,
+   database_role           IN VARCHAR2 DEFAULT NULL,
+   windows_domain          IN VARCHAR2 DEFAULT NULL,
+   comments                IN VARCHAR2 DEFAULT NULL);
+
+
+BEGIN
+  -- Basic credential.
+  DBMS_SCHEDULER.create_credential(
+    credential_name => 'TIM_HALL_CREDENTIAL',
+    username        => 'tim_hall',
+    password        => 'password');
+
+END;
+/
+
+
+criar credential
+exec DBMS_SCHEDULER.CREATE_CREDENTIAL(credential_name=>'oracle', username=>'oracle', password=>'oracle', database_role=>'SYSDBA');
+
+
+*wrong refes-> https://docs.oracle.com/cd/B28359_01/appdev.111/b28419/d_sched.htm#CHDEBDFH
+COLUMN credential_name FORMAT A25
+COLUMN username FORMAT A20
+COLUMN windows_domain FORMAT A20
+SELECT credential_name,
+       username,
+       windows_domain
+FROM   dba_scheduler_credentials
+ORDER BY credential_name;
+
+
+mostrar 
+DESC dba_scheduler_credentials;
+COLUMN credential_name FORMAT A20
+COLUMN username FORMAT A20
+SELECT credential_name,username,database_role FROM dba_scheduler_credentials;
+
+
+
+
+
+
+ALL_SCHEDULER_CREDENTIALS
+ALL_SCHEDULER_CREDENTIALS displays information about the credentials accessible to the current user (that is, those credentials that the user has ALTER or EXECUTE privileges for).
+
+Related Views
+DBA_SCHEDULER_CREDENTIALS displays information about all credentials in the database.
+
+USER_SCHEDULER_CREDENTIALS displays information about the credentials owned by the current user. This view does not display the OWNER column.
+
+
+DROP_CREDENTIAL Procedure
+This procedure drops a credential.
+
+Syntax
+
+DBMS_SCHEDULER.DROP_CREDENTIAL (
+   credential_name         IN VARCHAR2,
+   force                   IN BOOLEAN DEFAULT FALSE);
+
+
+Credentials are dropped using the DROP_CREDENTIAL procedure.
+
+EXEC DBMS_SCHEDULER.drop_credential('TIM_HALL_CREDENTIAL');
+
+
+BEGIN
+DBMS_SCHEDULER.DROP_CREDENTIAL (
+   'TIM_HALL_CREDENTIAL',TRUE);
+END;
+/
+
+OR 
+
+
+BEGIN
+DBMS_SCHEDULER.DROP_CREDENTIAL (
+   credential_name=> 'ORACLE_OS_CREDS',
+   force => TRUE);
+END;
+/
+
+*force
+If force is set to FALSE, and an instance of the job is running at the time of the call, the call results in an error.
+If force is set to TRUE, the Scheduler first attempts to stop the running job instance (by issuing the STOP_JOB call with the force flag set to false), and then drops the job.
 
 
 
@@ -498,11 +592,27 @@ DESC DBMS_JOB
 
 
 
+CREATE_JOB Procedure
+This procedure creates a single job (regular or lightweight). If you create the job enabled by setting the enabled attribute to TRUE, the Scheduler automatically runs the job according to its schedule. If you create the job disabled, the job does not run until you enable it with the SET_ATTRIBUTE Procedure.
 
+The procedure is overloaded. The different functionality of each form of syntax is presented along with the syntax declaration.
 
+Syntax
 
+Creates a job in a single call without using an existing program or schedule:
 
-
+DBMS_SCHEDULER.CREATE_JOB (
+   job_name             IN VARCHAR2,
+   job_type             IN VARCHAR2,
+   job_action           IN VARCHAR2,
+   number_of_arguments  IN PLS_INTEGER              DEFAULT 0,
+   start_date           IN TIMESTAMP WITH TIME ZONE DEFAULT NULL,
+   repeat_interval      IN VARCHAR2                 DEFAULT NULL,
+   end_date             IN TIMESTAMP WITH TIME ZONE DEFAULT NULL,
+   job_class            IN VARCHAR2                 DEFAULT 'DEFAULT_JOB_CLASS',
+   enabled              IN BOOLEAN                  DEFAULT FALSE,
+   auto_drop            IN BOOLEAN                  DEFAULT TRUE,
+   comments             IN VARCHAR2                 DEFAULT NULL)
 
 
 
@@ -520,6 +630,8 @@ obs:
 desc: 
 
 ---------------------------------------------------------------------------------------------------------------------------------
+
+
 Executar scripts e exportar csv usando SQL*Plus
 
 
@@ -543,5 +655,56 @@ spool output.csv   -- Configura o arquivo que será escrito
 refes: https://makandracards.com/zeroglosa/40039-executar-scripts-e-exportar-csv-usando-sql-plus
 obs:
 desc: 
+
+---------------------------------------------------------------------------------------------------------------------------------
+
+ALTER SESSION
+
+ALTER SESSION SET time_zone = 'Asia/Shanghai';
+Setting the ORA_SDTZ environment variable.
+
+
+
+select dbtimezone from dual;
+
+---------------------------------------------------------------------------------------------------------------------------------
+
+
+
+
+BEGIN
+  DBMS_SCHEDULER.CREATE_JOB (
+   job_name           =>  'rman_weekly_increLV0',
+   job_type           =>  'executable',
+   job_action         =>  '/home/oracle/scripts/rman_script2_weekly_increLV0.sh',
+   repeat_interval    =>  'FREQ=weekly;byday=sun;BYHOUR=6;BYMINUTE=0', 
+   credential_name    =>  'oracle',
+   enabled            =>    TRUE,
+   auto_drop          =>   FALSE,
+   comments           =>  'Job to run weekly incremental LVL0 backup');
+END;
+/
+
+
+
+
+BEGIN
+dbms_scheduler.set_attribute(
+	name => 'rman_weekly_increLV0',
+	attribute => 'credential_name',
+	value => 'oracle');
+END;
+/
+
+
+begin
+    dbms_scheduler.run_job(job_name=>'RMAN_WEEKLY_INCRELV0'); -- true is default
+end;
+/
+
+
+
+
+SELECT JOB_NAME, REPEAT_INTERVAL FROM DBA_SCHEDULER_JOBS
 
 ---------------------------------------------------------------------------------------------------------------------------------
